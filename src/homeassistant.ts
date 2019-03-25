@@ -4,7 +4,7 @@ import { CompletionItem } from "vscode";
 import * as vscode from 'vscode';
 import * as s from "./socket";
 import { ConnectionOptions } from "./socket"; 
-import * as ws from "ws"
+import * as ws from "ws";
 
 const WebSocket = require("ws");
 
@@ -41,6 +41,9 @@ export class HomeAssistant {
         }); 
         var options = <ConnectionOptions>{
             WebSocket: WebSocket,
+            webSocketClientOptions: <ws.ClientOptions> {
+                rejectUnauthorized: false
+            },
             auth: auth, 
             setupRetry: 1
         };
