@@ -1,5 +1,5 @@
 import * as ha from "home-assistant-js-websocket";
-import { config } from "./configuration";
+import { Config } from "./configuration";
 import { CompletionItem } from "vscode";
 import * as vscode from 'vscode';
 import * as s from "./socket";
@@ -14,9 +14,13 @@ export class HomeAssistant {
     private hassEntities!: Promise<ha.HassEntities>;
     private hassServices!: Promise<ha.HassServices>;
 
+    constructor(private config: Config) {
+
+    }
+
     private async ensureConnection(): Promise<void> {
 
-        let hasConfig = await config.hasConfigOrAsk();
+        let hasConfig = await this.config.hasConfigOrAsk();
         if (!hasConfig) {
             let message = `Cannot connect to Home Assistant: not configured`;
             vscode.window.showErrorMessage(message);
@@ -28,9 +32,9 @@ export class HomeAssistant {
         }
 
         let auth = new ha.Auth(<ha.AuthData>{
-            access_token: config.haToken,
+            access_token: `${this.config.haToken()}`,
             expires: +new Date(new Date().getTime() + 1e11),
-            hassUrl: config.haUrl,
+            hassUrl: `${this.config.haUrl()}`,
             clientId: "",
             expires_in: +new Date(new Date().getTime() + 1e11),
             refresh_token: ""
@@ -63,7 +67,7 @@ export class HomeAssistant {
 
     private handleConnectionError = (error: any) => {
         this.connection = undefined;
-        var tokenIndication = `${config.haToken}`.substring(0, 5);
+        var tokenIndication = `${this.config.haToken()}`.substring(0, 5);
         var errorText = error;
         switch (error) {
             case 1:
@@ -79,7 +83,7 @@ export class HomeAssistant {
                 errorText = "ERR_HASS_HOST_REQUIRED";
                 break;
         }
-        let message = `Error connecting to your Home Assistant Server at ${config.haUrl} and token '${tokenIndication}...', check your network or update your VS Code Settings, make sure to (also) check your workspace settings! Error: ${errorText}`;
+        let message = `Error connecting to your Home Assistant Server at ${this.config.haUrl()} and token '${tokenIndication}...', check your network or update your VS Code Settings, make sure to (also) check your workspace settings! Error: ${errorText}`;
         vscode.window.showErrorMessage(message);
         console.error(message);
     }
